@@ -10,4 +10,4 @@ Eine App, mit der Freunde nach dem Swipe-and-Match-Prinzip Restaurants und Bars 
 
 ## Status
 
-Projekt im Aufbau. Das Grobkonzept steht in [KONZEPT.md](KONZEPT.md).
+Projekt im Aufbau. Das Grobkonzept steht in [KONZEPT.md](KONZEPT.md), die Risikoanalyse in [REDTEAMING.md](REDTEAMING.md).

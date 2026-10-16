@@ -1,10 +1,10 @@
 # Wo gehen wir hin? – Grobkonzept
 
-Stand: Oktober 2026 · Version 0.1
+Stand: Oktober 2026 · Version 0.2 (nach [Red-Teaming](REDTEAMING.md))
 
 ## 1. Idee in einem Satz
 
-Freunde starten per Link eine gemeinsame Runde, swipen unabhängig voneinander durch Restaurants und Bars in der Nähe – und sobald alle denselben Ort mögen, steht fest, wo es hingeht.
+Freunde starten per Link eine gemeinsame Runde, swipen unabhängig voneinander durch Restaurants und Bars in der Nähe und sehen live, welcher Ort der Gruppe am besten gefällt. Mögen alle denselben Ort, gibt es ein „Perfect Match“.
 
 ## 2. Rahmenbedingungen
 
@@ -12,53 +12,63 @@ Freunde starten per Link eine gemeinsame Runde, swipen unabhängig voneinander d
 |---|---|
 | Plattform | Web-App als PWA (läuft im Browser, kann auf den Home-Bildschirm gelegt werden) |
 | Ortsdaten | Google Places API (New) |
-| Backend / Datenbank | Firebase (Firestore, Authentication, Hosting, Cloud Functions) |
+| Backend / Datenbank | Firebase (Firestore, Authentication, Hosting, Cloud Functions, App Check), Standort Frankfurt |
 | Zielgruppe | Zunächst nur der eigene Freundeskreis |
 | Sprache | Deutsch |
 | Zeitrahmen | Erste echte Nutzung in ca. 3 Wochen |
 | Rollen | Claude programmiert, getestet wird gemeinsam |
+| Gestaltung | Sehr heller, pastelliger Peach-Ton (siehe Abschnitt 6) |
 
 ## 3. Ablauf aus Nutzersicht
 
 ### 3.1 Runde erstellen
 1. Person A öffnet die App und gibt ihren **Namen** ein (keine Registrierung nötig).
 2. A legt die Suche fest:
-   - **Ausgangspunkt:** aktueller Standort oder eingegebene Adresse/Stadt
-   - **Umkreis:** z. B. 1 / 2 / 5 / 10 km
+   - **Ausgangspunkt:** aktueller Standort (Standard) oder Adresse/Stadt mit Autovervollständigung
+   - **Umkreis:** 1 / 2 / 5 / 10 km
    - **Art:** Restaurant, Bar, Café (Mehrfachauswahl)
-   - **Preisniveau:** € bis €€€€ (Mehrfachauswahl)
-   - **Geöffnet um:** optional Datum + Uhrzeit des geplanten Treffens
-3. Die App sucht passende Orte (ca. 20–30) und erstellt die Runde.
+   - **Preisniveau:** € bis €€€€ (Mehrfachauswahl; Orte ohne Angabe bleiben drin)
+   - **Geöffnet:** optional „am … ab … Uhr für … Stunden“ (Standard 2 Std.)
+3. Die App sucht passende Orte (Ziel 20–30). Gibt es zu wenige, wird der Umkreis automatisch erweitert, und die App weist darauf hin.
 4. A bekommt einen **Einladungslink** und teilt ihn z. B. per WhatsApp.
 
 ### 3.2 Beitreten und swipen
 1. Freunde öffnen den Link, geben ihren Namen ein und sind dabei.
-2. Alle sehen **denselben Stapel** an Vorschlägen in derselben Reihenfolge.
-3. Jede Karte zeigt: **Foto, Name, Bewertung, Preisniveau, Entfernung, Art/Küche**.
-4. **Rechts wischen** = gefällt mir, **links wischen** = eher nicht. Alternativ Buttons für alle, die nicht wischen möchten.
-5. Antippen einer Karte öffnet eine **Detailansicht** mit kleiner Karte (Lage) und Button **„In Google Maps öffnen“**.
-6. Jeder swipt, wann er Zeit hat – es muss niemand gleichzeitig online sein.
+2. Ist der Name schon in der Runde, fragt die App: „Bist du *Anna*? → weitermachen“. Das ist für den Fall, dass jemand das Gerät oder den Browser gewechselt hat.
+3. Alle sehen **denselben Stapel** in derselben Reihenfolge.
+4. Jede Karte zeigt: **Foto, Name, Bewertung, Preisniveau, Entfernung zum Treffpunkt, Art/Küche** und gegebenenfalls „Öffnungszeiten prüfen“.
+5. **Rechts wischen** = gefällt mir, **links wischen** = eher nicht. Zusätzlich gibt es Buttons mit Symbolen (♥ / ✕), nicht nur Farben.
+6. Antippen einer Karte öffnet eine **Detailansicht** mit kleiner Karte und dem Button **„In Google Maps öffnen“**.
+7. Jeder swipt, wann er Zeit hat. Mit **„Ich bin fertig“** kann man auch vor der letzten Karte aufhören.
 
-### 3.3 Match und Ergebnis
-- **Match:** Ein Ort, den **alle** Teilnehmenden mit „gefällt mir“ markiert haben. Es erscheint sofort live bei allen.
-- **Rangliste:** Gibt es (noch) kein volles Match, sehen alle die beliebtesten Orte („4 von 5 mögen das“).
+### 3.3 Zwischenstand und Ergebnis
+- **Live-Zwischenstand:** Rangliste der Orte und wer schon fertig ist.
+- **Rangliste:** sortiert nach Zustimmungsquote unter denen, die die Karte gesehen haben. Bei Gleichstand zählen mehr Likes, dann die bessere Google-Bewertung, dann die geringere Entfernung. Nicht geswipte Karten zählen nicht als Ablehnung.
+- **Perfect Match 🎉:** ein Ort, den alle Teilnehmenden mögen. Ab 4 Personen ist das selten, deshalb ist die Rangliste das eigentliche Ergebnis.
+- **Endergebnis:** Es steht fest, wenn alle fertig sind oder die Ersteller-Person die Runde beendet. Danach kann niemand mehr beitreten.
+- Die Ersteller-Person kann Teilnehmende entfernen.
 - Ergebnisansicht mit „In Google Maps öffnen“ (Navigation, Öffnungszeiten, Telefonnummer für Reservierung).
-- Die Ersteller-Person kann die Runde beenden.
+- *Offen (A4):* Sieht man, wer welchen Ort mag, oder nur die Summe? Vorschlag: **nur die Summe**.
 
 ## 4. Funktionsumfang
 
 ### Version 1 (Ziel: in 3 Wochen nutzbar)
-- Runde erstellen mit Filtern (Ausgangspunkt, Umkreis, Art, Preisniveau, Geöffnet um)
-- Beitreten per Link nur mit Namen
-- Swipe-Karten inkl. Detailansicht mit Karte und Google-Maps-Link
-- Match, wenn alle zustimmen, plus Rangliste
-- Live-Aktualisierung (wer ist dabei, wer ist fertig, Match)
-- Als PWA installierbar, optimiert fürs Handy
-- Runden werden nach einigen Tagen automatisch gelöscht
+**Kern, der in jedem Fall fertig wird:**
+- Runde erstellen (Standort, Umkreis, Art, Preisniveau)
+- Beitreten per Link, Wiedererkennen über den Namen
+- Swipe-Karten
+- Live-Rangliste, Perfect Match, Runde beenden
+
+**Ebenfalls geplant. Wird es eng, streichen wir in dieser Reihenfolge:**
+1. Filter „Geöffnet“ (zur Not nur „heute Abend geöffnet“)
+2. Detailansicht mit eingebetteter Karte (zur Not nur Google-Maps-Link)
+3. Adresseingabe statt Standort
+
+**Außerdem:** als PWA installierbar, fürs Handy optimiert, automatisches Löschen nach 7 Tagen.
 
 ### Spätere Ausbaustufen (Ideen)
 - Anmeldung mit Google-Konto, „Meine Runden“, Freundesliste
-- Karten-Ansicht aller Vorschläge
+- Kartenansicht aller Vorschläge
 - Datum/Uhrzeit abstimmen, Kalendereintrag
 - „Super-Like“ / Veto
 - Weitere Filter (Küche, Mindestbewertung, vegetarisch …)
@@ -71,70 +81,107 @@ Freunde starten per Link eine gemeinsame Runde, swipen unabhängig voneinander d
 
 ```
 Handy-Browser (PWA: React + TypeScript + Vite)
-   │  Firebase SDK (live)               │  HTTPS
-   ▼                                    ▼
-Firestore (Runden, Teilnehmende,   Cloud Functions
-Swipes)  ◄────────────────────────  - Orte suchen (Places API)
-                                    - Match berechnen
-Firebase Auth (anonym)              - API-Schlüssel bleibt geheim
-Firebase Hosting (App ausliefern)
+   │  Firebase SDK (live)                │  HTTPS + App Check
+   ▼                                     ▼
+Firestore (Frankfurt)                Cloud Functions (Frankfurt)
+ Runden, Teilnehmende,  ◄──────────  - Orte suchen (Places Text Search)
+ Rangliste                           - Rangliste / Match berechnen
+                                     - Wiedererkennen per Name
+Firebase Auth (anonym)               - Aufräumen (täglich)
+Firebase Hosting (App ausliefern)    - Limits pro Person
 ```
 
-- **Frontend:** React + TypeScript, gebaut mit Vite, als PWA. Swipe-Gesten über eine kleine Bibliothek.
-- **Anmeldung:** Firebase Anonymous Auth – jede Person bekommt im Hintergrund eine ID, sichtbar ist nur der eingegebene Name.
-- **Ortssuche:** Eine Cloud Function ruft die Places API auf. So liegt der API-Schlüssel nie im Browser, und die Suche passiert einmal pro Runde statt einmal pro Person.
-- **Karte in der Detailansicht:** Maps Embed API (kostenlos) bzw. Link zu Google Maps.
+- **Frontend:** React + TypeScript, gebaut mit Vite, als PWA.
+- **Anmeldung:** Firebase Anonymous Auth. Jede Person bekommt im Hintergrund eine ID, sichtbar ist nur der eingegebene Name.
+- **Ortssuche:** über eine Cloud Function mit **Text Search** (bis zu 60 Ergebnisse, Preis- und Typfilter direkt bei Google). Der API-Schlüssel bleibt auf dem Server.
+- **Schutz vor Missbrauch:** Firebase App Check, nur angemeldete Nutzer, Begrenzung der Suchen pro Person und Tag.
+- **Adresseingabe:** Places Autocomplete.
+- **Karte in der Detailansicht:** Maps Embed API (kostenlos), Schlüssel auf unsere Domain beschränkt.
+- **Region:** `europe-west3` (Frankfurt) für Firestore und Functions.
 
 ### 5.2 Datenmodell (Firestore)
 
 ```
 sessions/{sessionId}
-  createdBy:   uid
-  createdAt:   Zeitstempel
-  expiresAt:   Zeitstempel (automatisches Löschen)
-  status:      "open" | "closed"
-  search:      { center: {lat, lng}, label, radiusM, types[], priceLevels[], openAt | null }
-  placeIds:    [placeId, …]        // Reihenfolge des Stapels
-  matchPlaceId: placeId | null
+  createdBy:    uid
+  createdAt, expiresAt
+  status:       "open" | "closed"
+  search:       { center: {lat, lng} (auf ~200 m gerundet), label (Stadtteil),
+                  radiusM, types[], priceLevels[], openFrom | null, openHours }
+  placeIds:     [placeId, …]                // Reihenfolge des Stapels
+  ranking:      [{ placeId, likes, seen }, …]  // nur Server schreibt
+  perfectMatchIds: [placeId, …]             // nur Server schreibt
 
 sessions/{sessionId}/members/{uid}
-  name:     "Anna"
-  joinedAt: Zeitstempel
+  name, joinedAt, expiresAt
   done:     true | false
-  votes:    { placeId: true | false, … }
+  removed:  true | false                    // nur Ersteller/Server
+
+sessions/{sessionId}/votes/{uid}
+  expiresAt
+  votes:    { placeId: true | false, … }    // nur eigene Person liest/schreibt
 ```
 
-- Die **Session-ID** ist lang und zufällig – nur wer den Link hat, kommt in die Runde.
-- **Sicherheitsregeln:** Nur Teilnehmende lesen eine Runde; jede Person darf nur ihre eigenen Swipes schreiben.
+- Die **Session-ID** ist lang und zufällig. Nur wer den Link hat, kommt in die Runde. Ein Auflisten aller Runden ist gesperrt.
+- **Swipes bleiben privat:** Jede Person sieht nur ihre eigenen. Der Server berechnet daraus die Rangliste.
+- **Sicherheitsregeln:** Clients schreiben nur den eigenen Namen, den Fertig-Status und Swipes auf Orte dieser Runde. Rangliste, Match, Status und Ersteller setzt nur der Server. Die Regeln werden mit automatischen Tests abgesichert.
+- **Löschen:** Jedes Dokument hat ein eigenes `expiresAt` (Firestore-TTL), dazu kommt eine tägliche Aufräumfunktion. Die TTL löscht keine Unterdokumente mit.
 
-### 5.3 Wichtige Hinweise zur Google Places API
-- **Speichern:** Laut Google-Bedingungen dürfen wir dauerhaft nur die **Place-ID** speichern. Name, Fotos, Bewertungen usw. werden bei Bedarf frisch von Google geladen und nicht in Firestore abgelegt.
-- **„Geöffnet um“:** Die API kennt nur „jetzt geöffnet“. Für einen späteren Zeitpunkt laden wir die regulären Öffnungszeiten und filtern selbst. Orte ohne Öffnungszeiten bleiben drin und werden markiert.
-- **Preisniveau:** Nicht jeder Ort hat eine Angabe. Orte ohne Preisniveau bleiben drin (sonst fallen zu viele weg).
-- **Kosten:** Abrechnung pro Anfrage, mit kostenlosem monatlichen Kontingent. Für einen Freundeskreis sollte das reichen. Wir fragen nur die nötigen Felder ab, setzen **Tageslimits** und eine **Budget-Warnung**.
+### 5.3 Google Places API
+- **Speichern:** Dauerhaft speichern wir nur die **Place-ID**. Name, Fotos und Bewertungen kommen frisch von Google. Ob wir Details für die Dauer einer Runde zwischenspeichern dürfen, prüfen wir vor Woche 2 in den Google-Bedingungen für den EWR.
+- **Öffnungszeiten:** Für Termine in den nächsten 7 Tagen nutzen wir die tagesaktuellen Öffnungszeiten von Google, die Feiertage und Sonderzeiten enthalten. Bei fehlenden Angaben bekommt die Karte den Hinweis „Öffnungszeiten prüfen“.
+- **Typen:** Pro Kategorie fassen wir mehrere Google-Typen zusammen, etwa bar, pub und wine_bar. Wir justieren in der Testphase nach.
+- **Kosten:**
+  - Wir fragen nur die nötigen Felder ab.
+  - Pro Karte laden wir ein Foto in kleiner Auflösung.
+  - In der Google Cloud Console setzen wir **harte Tageslimits (Quotas)**. Die sind die eigentliche Kostenbremse, denn eine Budget-Warnung schickt nur eine E-Mail.
+  - In Woche 2 messen wir die echten Kosten mit einer Testrunde.
 
 ### 5.4 Datenschutz (Freundeskreis-Version)
-- Gespeichert werden nur: Vorname/Spitzname, Swipes, Suchort der Runde.
+- Gespeichert werden nur: Vorname/Spitzname, Swipes und der gerundete Suchort der Runde.
 - Keine E-Mail, kein Passwort, kein Tracking.
-- Runden werden nach z. B. 7 Tagen automatisch gelöscht.
-- Vor einer öffentlichen Version: Datenschutzerklärung und Impressum ergänzen.
+- Runden werden nach 7 Tagen automatisch gelöscht.
+- Schriften liefern wir selbst aus, nicht über Google Fonts.
+- Vor einer öffentlichen Version: Datenschutzerklärung (inkl. Google-Dienste) und Impressum ergänzen.
 
-## 6. Einrichtung (einmalig, gemeinsam)
+## 6. Gestaltung
 
-1. **Firebase-Projekt anlegen** auf <https://console.firebase.google.com> mit dem eigenen Google-Konto.
-2. **Tarif „Blaze“ (nutzungsbasiert) aktivieren** – wird für Cloud Functions und den Aufruf externer APIs benötigt. Bei unserer Nutzung bleiben die Kosten voraussichtlich im kostenlosen Rahmen; eine **Budget-Warnung** (z. B. 5 €) wird gesetzt.
-3. In der Google Cloud Console (gleiches Projekt) die **Places API (New)** und **Maps Embed API** aktivieren und einen API-Schlüssel mit Einschränkungen anlegen.
-4. Den API-Schlüssel als **Secret** in Firebase hinterlegen (nicht ins Repo, nicht in den Chat).
+Leicht, freundlich, viel Weißraum. Die Grundfarbe ist ein sehr heller, pastelliger Peach-Ton.
 
-## 7. Zeitplan (3 Wochen)
+| Rolle | Farbe | Verwendung |
+|---|---|---|
+| Hintergrund | `#FFF7F2` | App-Hintergrund |
+| Fläche | `#FFE9DD` | Karten, Eingabefelder |
+| Peach (Akzent) | `#FBC9B0` | Buttons, aktive Filter, „gefällt mir“ |
+| Peach kräftig | `#F2A285` | Hervorhebungen, Perfect Match |
+| Text | `#3B2A25` | Schrift (gut lesbar auf allen Peach-Tönen) |
+| Neutral | `#B8AAA4` | „eher nicht“, Nebeninfos |
+
+Erste Werte, die wir am echten Bildschirm feinjustieren. Schrift auf Peach-Flächen ist immer dunkel, damit der Kontrast stimmt. Die Bedeutung hängt nie nur an der Farbe, es gibt immer auch Symbole.
+
+## 7. Einrichtung (Woche 0, gemeinsam)
+
+1. **Firebase-Projekt anlegen** auf <https://console.firebase.google.com> mit dem eigenen Google-Konto. Google Analytics ist nicht nötig.
+2. **Tarif „Blaze“ aktivieren.** Er wird für Cloud Functions und externe APIs benötigt. Dazu eine **Budget-Warnung** setzen (z. B. 5 €).
+3. **Firestore anlegen mit Standort `europe-west3` (Frankfurt).** Der lässt sich später nicht ändern.
+4. In der Google Cloud Console (gleiches Projekt):
+   - **Places API (New)** und **Maps Embed API** aktivieren
+   - **Tageslimits (Quotas)** setzen, Werte stimmen wir ab
+   - API-Schlüssel anlegen und auf diese APIs beschränken
+5. Den API-Schlüssel als **Secret** in Firebase hinterlegen (nicht ins Repo, nicht in den Chat).
+
+## 8. Zeitplan
 
 | Woche | Inhalt |
 |---|---|
-| 1 | Projekt-Grundgerüst, Firebase-Anbindung, Runde erstellen, Beitreten per Link, Swipe-Oberfläche mit Beispieldaten |
-| 2 | Anbindung Places API, Filter, Match-Logik, Rangliste, Live-Updates, Detailansicht mit Karte |
-| 3 | Feinschliff, PWA, Testrunden im Freundeskreis, Fehler beheben, Veröffentlichung auf Firebase Hosting |
+| 0 | Einrichtung Firebase/Google Cloud (siehe Abschnitt 7) |
+| 1 | Grundgerüst, Gestaltung, Runde erstellen, Beitreten per Link, Swipe-Oberfläche mit Beispieldaten, Sicherheitsregeln |
+| 2 | Places-Anbindung, Filter, Rangliste/Match, Live-Updates, Kostenmessung |
+| 3 | Feinschliff, PWA, Testrunden auf iPhone und Android, Veröffentlichung auf Firebase Hosting |
 
-## 8. Offene Punkte
-- Name/Adresse der App (Firebase Hosting liefert kostenlos `<projekt>.web.app`; eigene Domain optional)
-- Gestaltung: Farben, Logo, Stil
-- Feinabstimmung: Anzahl Vorschläge, Standard-Umkreis, Löschfrist
+## 9. Offene Punkte
+- **A4:** Einzelne Swipes sichtbar oder nur die Summe? (Vorschlag: nur die Summe)
+- Höhe der Tageslimits für die Places API
+- Name und Adresse der App (`<projekt>.web.app` kostenlos, eigene Domain optional)
+- Logo
+- Feinabstimmung: Anzahl Vorschläge, Standard-Umkreis
