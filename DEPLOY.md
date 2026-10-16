@@ -42,7 +42,21 @@ Dauer: ca. 10 Minuten. Es muss nichts installiert werden, alles läuft im Browse
 3. **„Add secret“**.
 4. Die heruntergeladene JSON-Datei vom Computer **löschen** (auch aus dem Papierkorb).
 
-## 4. Erste Veröffentlichung starten
+## 4. Einmalige Freigabe für Googles eigene Dienstkonten
+
+Cloud Functions braucht drei Berechtigungen für Google-interne Dienstkonten. Diese darf nur der Projektinhaber setzen,
+daher einmalig selbst erledigen:
+
+1. <https://shell.cloud.google.com/?project=wo-gehen-wir-hin> öffnen (Cloud Shell, läuft im Browser).
+2. Diesen Block einfügen und mit Enter ausführen (bei Nachfrage „Autorisieren“ klicken):
+
+```bash
+gcloud projects add-iam-policy-binding wo-gehen-wir-hin --member=serviceAccount:service-684891421654@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/iam.serviceAccountTokenCreator --condition=None
+gcloud projects add-iam-policy-binding wo-gehen-wir-hin --member=serviceAccount:684891421654-compute@developer.gserviceaccount.com --role=roles/run.invoker --condition=None
+gcloud projects add-iam-policy-binding wo-gehen-wir-hin --member=serviceAccount:684891421654-compute@developer.gserviceaccount.com --role=roles/eventarc.eventReceiver --condition=None
+```
+
+## 5. Erste Veröffentlichung starten
 
 1. <https://github.com/janrns/wo-gehen-wir-hin/actions> öffnen → oberster Lauf **„CI“**.
 2. Rechts oben **„Re-run all jobs“**.
