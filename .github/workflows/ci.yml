@@ -26,3 +26,38 @@ jobs:
       - run: npm --prefix functions run build
       - run: npm run build
       - run: npm test
+
+  deploy:
+    # Veröffentlicht nach erfolgreichen Tests jeden Stand von main auf Firebase.
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency: deploy
+    env:
+      HAS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+    steps:
+      - name: Prüfen, ob der Zugangsschlüssel hinterlegt ist
+        if: env.HAS_SERVICE_ACCOUNT != 'true'
+        run: echo "::warning::Secret FIREBASE_SERVICE_ACCOUNT fehlt – Veröffentlichung übersprungen."
+      - uses: actions/checkout@v4
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
+      - uses: actions/setup-node@v4
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+      - uses: google-github-actions/auth@v2
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - if: env.HAS_SERVICE_ACCOUNT == 'true'
+        run: npm ci
+      - if: env.HAS_SERVICE_ACCOUNT == 'true'
+        run: npm --prefix functions ci
+      - if: env.HAS_SERVICE_ACCOUNT == 'true'
+        run: npm run build
+      - if: env.HAS_SERVICE_ACCOUNT == 'true'
+        run: npx firebase deploy --project wo-gehen-wir-hin --non-interactive --force

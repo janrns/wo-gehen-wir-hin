@@ -43,9 +43,14 @@ Tests: `npm test` (Rangliste + Zugriffsregeln).
 
 ## Veröffentlichen
 
+Automatisch: Jeder Push auf `main` wird nach erfolgreichen Tests per GitHub Actions auf Firebase veröffentlicht
+(Secret `FIREBASE_SERVICE_ACCOUNT`, Einrichtung siehe [DEPLOY.md](DEPLOY.md)).
+
+Manuell (mit installiertem Node.js):
+
 ```bash
 npx firebase login
 npm run deploy
 ```
 
-Danach ist die App unter <https://wo-gehen-wir-hin.web.app> erreichbar.
+Die App ist unter <https://wo-gehen-wir-hin.web.app> erreichbar.
