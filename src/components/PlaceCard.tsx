@@ -1,14 +1,21 @@
-import { TYPE_LABEL, formatDistance, formatRating } from "../format";
+import { formatDistance, formatRating, kicker } from "../format";
 import type { Place } from "../types";
 
-export function PlacePhoto({ place, className = "" }: { place: Place; className?: string }) {
+export function PlacePhoto({ place, url, className = "" }: { place: Place; url?: string; className?: string }) {
   const h = place.photoHue;
   return (
     <div
       className={`photo ${className}`}
       style={{ background: `linear-gradient(135deg, hsl(${h} 75% 90%), hsl(${(h + 35) % 360} 70% 82%))` }}
     >
-      <span aria-hidden>{place.emoji}</span>
+      {url ? (
+        <>
+          <img src={url} alt="" draggable={false} referrerPolicy="no-referrer" />
+          {place.photoAuthor && !className.includes("thumb") && <span className="photo-credit">Foto: {place.photoAuthor}</span>}
+        </>
+      ) : (
+        <span aria-hidden>{place.emoji}</span>
+      )}
     </div>
   );
 }
@@ -43,13 +50,13 @@ export function PlaceFacts({ place }: { place: Place }) {
   );
 }
 
-export function PlaceCard({ place }: { place: Place }) {
+export function PlaceCard({ place, photoUrl }: { place: Place; photoUrl?: string }) {
   return (
     <article className="place-card">
-      <PlacePhoto place={place} />
+      <PlacePhoto place={place} url={photoUrl} />
       <div className="place-body">
         <p className="kicker">
-          {TYPE_LABEL[place.type]} · {place.cuisine}
+          {kicker(place)}
         </p>
         <h2>{place.name}</h2>
         <PlaceFacts place={place} />

@@ -4,11 +4,6 @@ export interface RankingEntry {
   seen: number;
 }
 
-export interface TieBreak {
-  rating: number | null;
-  distanceM: number;
-}
-
 export interface RankingResult {
   ranking: RankingEntry[];
   perfectMatchIds: string[];
@@ -17,16 +12,15 @@ export interface RankingResult {
 /**
  * Rangliste nach Zustimmungsquote unter denen, die die Karte gesehen haben.
  * Nicht geswipte Karten zählen nicht als Ablehnung.
- * Gleichstand: mehr Likes, dann bessere Bewertung, dann geringere Entfernung.
+ * Gleichstand: mehr Likes, dann Position im Stapel (der ist nach Bewertung sortiert).
  * Perfect Match: alle aktiven Teilnehmenden (mind. 2) mögen den Ort.
  */
 export function computeRanking(
   placeIds: string[],
   votesByMember: Record<string, Record<string, unknown>>,
   activeMemberIds: string[],
-  tieBreak: Record<string, TieBreak> = {},
 ): RankingResult {
-  const ranking = placeIds.map((placeId) => {
+  const ranking = placeIds.map((placeId, index) => {
     let likes = 0;
     let seen = 0;
     for (const uid of activeMemberIds) {
@@ -35,22 +29,16 @@ export function computeRanking(
       seen++;
       if (vote) likes++;
     }
-    return { placeId, likes, seen };
+    return { placeId, likes, seen, index };
   });
 
   const quota = (e: RankingEntry) => (e.seen === 0 ? -1 : e.likes / e.seen);
-  ranking.sort(
-    (a, b) =>
-      quota(b) - quota(a) ||
-      b.likes - a.likes ||
-      (tieBreak[b.placeId]?.rating ?? 0) - (tieBreak[a.placeId]?.rating ?? 0) ||
-      (tieBreak[a.placeId]?.distanceM ?? Infinity) - (tieBreak[b.placeId]?.distanceM ?? Infinity),
-  );
+  ranking.sort((a, b) => quota(b) - quota(a) || b.likes - a.likes || a.index - b.index);
 
   const perfectMatchIds =
     activeMemberIds.length >= 2
       ? ranking.filter((e) => e.likes === activeMemberIds.length).map((e) => e.placeId)
       : [];
 
-  return { ranking, perfectMatchIds };
+  return { ranking: ranking.map(({ placeId, likes, seen }) => ({ placeId, likes, seen })), perfectMatchIds };
 }

@@ -45,15 +45,14 @@ Dauer: ca. 15 Minuten, alles im Browser, immer im Projekt **wo-gehen-wir-hin**.
    - **Speichern**
 2. Diesen Schlüssel **darfst du mir schicken** – er ist für den Browser gedacht und durch die Einschränkungen nur auf unserer Seite nutzbar.
 
-## 6. Kostenbremse (Kontingente)
+## 6. Kostenbremse
 
-1. <https://console.cloud.google.com/apis/api/places.googleapis.com/quotas?project=wo-gehen-wir-hin> öffnen.
-2. Die Kontingente für **Text Search**, **Place Details** und **Place Photos** (falls einzeln aufgeführt) auswählen →
-   **„Kontingent bearbeiten“** → auf niedrige Werte setzen, z. B. **60 pro Minute**.
-3. Falls dort auch **Tageswerte** angeboten werden: z. B. **Text Search 200/Tag, Place Details 2.000/Tag, Photos 2.000/Tag**.
+Im Testzeitraum lassen sich die API-Kontingente nicht bearbeiten. Deshalb hat die App eine **eigene, harte Grenze im Server-Code**
+(`functions/src/limits.ts`): höchstens **1.500 Google-Aufrufe pro Tag** insgesamt, dazu Grenzen pro Person
+(10 Runden, 40 Kartenladungen, 400 Fotos, 150 Adresssuchen pro Tag). Danach lehnt der Server weitere Anfragen bis zum nächsten Tag ab.
 
-Die Werte justieren wir nach der ersten echten Testrunde, wenn wir die tatsächlichen Kosten kennen.
-Die Budget-Warnung (5 €) aus der Einrichtung bleibt zusätzlich aktiv.
+Nach dem Testzeitraum zusätzlich die Kontingente unter
+<https://console.cloud.google.com/apis/api/places.googleapis.com/quotas?project=wo-gehen-wir-hin> niedrig setzen.
 
 ## Danach
 

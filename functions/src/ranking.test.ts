@@ -30,22 +30,13 @@ describe("computeRanking", () => {
     expect(result.perfectMatchIds).toEqual(["a"]);
   });
 
-  it("löst Gleichstand über Likes, Bewertung und Entfernung auf", () => {
+  it("löst Gleichstand über Likes und dann die Stapel-Reihenfolge auf", () => {
     const result = computeRanking(
-      ["near", "far", "better", "more"],
-      {
-        u1: { near: true, far: true, better: true, more: true },
-        u2: { more: true },
-      },
+      ["first", "second", "more"],
+      { u1: { first: true, second: true, more: true }, u2: { more: true } },
       ["u1", "u2"],
-      {
-        near: { rating: 4, distanceM: 100 },
-        far: { rating: 4, distanceM: 900 },
-        better: { rating: 4.8, distanceM: 2000 },
-        more: { rating: 3, distanceM: 5000 },
-      },
     );
-    expect(result.ranking.map((e) => e.placeId)).toEqual(["more", "better", "near", "far"]);
+    expect(result.ranking.map((e) => e.placeId)).toEqual(["more", "first", "second"]);
   });
 
   it("vergibt kein Perfect Match bei nur einer Person", () => {

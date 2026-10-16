@@ -7,12 +7,13 @@ const EXIT_MS = 220;
 
 interface Props {
   places: Place[];
+  photoUrl: (place: Place) => string | undefined;
   onVote: (placeId: string, like: boolean) => void;
   onOpen: (place: Place) => void;
   onDone: () => void;
 }
 
-export function SwipeDeck({ places, onVote, onOpen, onDone }: Props) {
+export function SwipeDeck({ places, photoUrl, onVote, onOpen, onDone }: Props) {
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [exit, setExit] = useState<"left" | "right" | null>(null);
@@ -80,7 +81,7 @@ export function SwipeDeck({ places, onVote, onOpen, onDone }: Props) {
       <div className="deck">
         {places[1] && (
           <div className="deck-card behind" aria-hidden>
-            <PlaceCard place={places[1]} />
+            <PlaceCard place={places[1]} photoUrl={photoUrl(places[1])} />
           </div>
         )}
         <div
@@ -92,7 +93,7 @@ export function SwipeDeck({ places, onVote, onOpen, onDone }: Props) {
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <PlaceCard place={top} />
+          <PlaceCard place={top} photoUrl={photoUrl(top)} />
           <div className="stamp like" style={{ opacity: Math.max(0, intent) }}>
             ♥ Gerne
           </div>
@@ -119,6 +120,7 @@ export function SwipeDeck({ places, onVote, onOpen, onDone }: Props) {
           Ich bin fertig
         </button>
       </p>
+      {top.source === "google" && <p className="attribution">Daten: Google Maps</p>}
     </section>
   );
 }

@@ -45,7 +45,7 @@ Jeder, der die App-Adresse kennt, könnte die Cloud Function in einer Schleife a
 **Gegenmaßnahme:**
 - **Firebase App Check:** Nur unsere App darf die Funktion aufrufen.
 - Nur angemeldete Nutzer, und höchstens einige Suchen pro Person und Tag.
-- **Harte Tageslimits (Quotas)** für die Places API in der Google Cloud Console. Das ist die eigentliche Kostenbremse.
+- **Harte Tageslimits:** im Server-Code (max. 1.500 Google-Aufrufe/Tag, plus Grenzen pro Person), weil API-Kontingente im Testzeitraum nicht einstellbar sind; später zusätzlich Quotas in der Google Cloud Console.
 - Den API-Schlüssel auf die benötigten APIs beschränken.
 
 ### B3 🟠 Kosten hängen an Fotos und Detailfeldern ✅

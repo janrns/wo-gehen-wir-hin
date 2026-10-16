@@ -39,6 +39,7 @@ export interface Member {
 
 export interface Place {
   id: string;
+  source: "google" | "sample";
   name: string;
   type: PlaceType;
   cuisine: string;
@@ -51,4 +52,12 @@ export interface Place {
   photoHue: number;
   emoji: string;
   openingHoursUnknown: boolean;
+  photoName: string | null;
+  photoAuthor: string | null;
+}
+
+export interface Suggestion {
+  placeId: string;
+  main: string;
+  secondary: string;
 }

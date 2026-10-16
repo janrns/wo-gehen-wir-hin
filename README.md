@@ -13,7 +13,7 @@ Details: [KONZEPT.md](KONZEPT.md) · Risikoanalyse: [REDTEAMING.md](REDTEAMING.m
 ## Stand
 
 Woche 1 ✅: Grundgerüst mit **ausgedachten Beispiel-Lokalen**, live unter <https://wo-gehen-wir-hin.web.app>.
-Woche 2: Anbindung an Google Places.
+Woche 2: Anbindung an Google Places (Ortssuche, Fotos, Öffnungszeiten, Adresssuche, Karte).
 
 ## Aufbau
 
@@ -32,6 +32,9 @@ Voraussetzungen: Node.js 22 und Java 21 (für die Firebase-Emulatoren).
 npm install
 npm --prefix functions install
 npm --prefix functions run build
+
+# Beispiel-Lokale statt Google verwenden (Datei wird nicht eingecheckt)
+echo "PLACES_API_KEY=sample" > functions/.secret.local
 
 # Terminal 1: Firebase-Emulatoren (Auth, Firestore, Functions)
 npm run emulators

@@ -1,38 +1,7 @@
-// Ortsdaten. In Woche 1 kommen sie aus einem festen Beispielkatalog;
-// in Woche 2 wird searchPlaces/getPlaceDetails durch die Google Places API ersetzt.
-
-export type PlaceType = "restaurant" | "bar" | "cafe";
-
-export interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-export interface SearchParams {
-  center: LatLng;
-  label: string;
-  radiusM: number;
-  types: PlaceType[];
-  priceLevels: number[];
-  openFrom: string | null;
-  openHours: number;
-}
-
-export interface PlaceDetails {
-  id: string;
-  name: string;
-  type: PlaceType;
-  cuisine: string;
-  rating: number | null;
-  ratingCount: number;
-  priceLevel: number | null;
-  distanceM: number;
-  address: string;
-  mapsUrl: string;
-  photoHue: number;
-  emoji: string;
-  openingHoursUnknown: boolean;
-}
+// Ausgedachte Beispiel-Lokale für Tests und die lokale Entwicklung (Emulator, PLACES_API_KEY=sample).
+import { distanceM, offsetPosition } from "./geo";
+import { selectPlaces, type Candidate } from "./select";
+import type { PlaceDetails, PlacesProvider, PlaceType } from "./types";
 
 interface SamplePlace {
   id: string;
@@ -83,61 +52,78 @@ const SAMPLE_PLACES: SamplePlace[] = [
 
 const BY_ID = new Map(SAMPLE_PLACES.map((p) => [p.id, p]));
 
-const MAX_PLACES = 25;
-
-const EARTH_RADIUS_M = 6_371_000;
-
-export function distanceM(a: LatLng, b: LatLng): number {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return Math.round(2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(h)));
+function candidate(p: SamplePlace): Candidate {
+  return {
+    id: p.id,
+    type: p.type,
+    rating: p.rating,
+    ratingCount: p.ratingCount,
+    priceLevel: p.priceLevel,
+    distanceM: Math.round(Math.hypot(...p.offsetM)),
+    open: null,
+    operational: true,
+  };
 }
 
-function samplePosition(center: LatLng, [north, east]: [number, number]): LatLng {
-  const lat = center.lat + north / 111_320;
-  const lng = center.lng + east / (111_320 * Math.cos((center.lat * Math.PI) / 180));
-  return { lat, lng };
-}
+export const sampleProvider: PlacesProvider = {
+  async search(search, maxPlaces, minPlaces, maxRadiusM) {
+    let current = { ...search };
+    let placeIds = selectPlaces(SAMPLE_PLACES.map(candidate), current, maxPlaces);
+    while (placeIds.length < minPlaces && current.radiusM < maxRadiusM) {
+      current = { ...current, radiusM: Math.min(current.radiusM * 2, maxRadiusM) };
+      placeIds = selectPlaces(SAMPLE_PLACES.map(candidate), current, maxPlaces);
+    }
+    return { placeIds, plan: search.types.map((type) => ({ type, pages: 1 })), radiusM: current.radiusM };
+  },
 
-function offsetDistance([north, east]: [number, number]): number {
-  return Math.round(Math.hypot(north, east));
-}
+  async details(search, _plan, ids) {
+    return ids.flatMap((id, index): PlaceDetails[] => {
+      const p = BY_ID.get(id);
+      if (!p) return [];
+      const pos = offsetPosition(search.center, p.offsetM[0], p.offsetM[1]);
+      return [
+        {
+          id: p.id,
+          source: "sample",
+          name: p.name,
+          type: p.type,
+          cuisine: p.cuisine,
+          rating: p.rating,
+          ratingCount: p.ratingCount,
+          priceLevel: p.priceLevel,
+          distanceM: distanceM(search.center, pos),
+          address: p.street,
+          mapsUrl: `https://www.google.com/maps/search/?api=1&query=${pos.lat.toFixed(5)},${pos.lng.toFixed(5)}`,
+          photoHue: (index * 47) % 360,
+          emoji: p.emoji,
+          openingHoursUnknown: search.openFrom !== null && (p.openingHoursUnknown ?? false),
+          photoName: null,
+          photoAuthor: null,
+        },
+      ];
+    });
+  },
 
-/** Liefert die Place-IDs für den Swipe-Stapel, beste Bewertung zuerst. */
-export function searchPlaces(search: SearchParams): string[] {
-  return SAMPLE_PLACES.filter((p) => search.types.includes(p.type))
-    .filter((p) => p.priceLevel === null || search.priceLevels.includes(p.priceLevel))
-    .filter((p) => offsetDistance(p.offsetM) <= search.radiusM)
-    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-    .slice(0, MAX_PLACES)
-    .map((p) => p.id);
-}
+  async photos() {
+    return {};
+  },
 
-export function getPlaceDetails(ids: string[], center: LatLng): PlaceDetails[] {
-  return ids.flatMap((id, index) => {
-    const p = BY_ID.get(id);
-    if (!p) return [];
-    const pos = samplePosition(center, p.offsetM);
-    return [
-      {
-        id: p.id,
-        name: p.name,
-        type: p.type,
-        cuisine: p.cuisine,
-        rating: p.rating,
-        ratingCount: p.ratingCount,
-        priceLevel: p.priceLevel,
-        distanceM: distanceM(center, pos),
-        address: p.street,
-        mapsUrl: `https://www.google.com/maps/search/?api=1&query=${pos.lat.toFixed(5)},${pos.lng.toFixed(5)}`,
-        photoHue: (index * 47) % 360,
-        emoji: p.emoji,
-        openingHoursUnknown: p.openingHoursUnknown ?? false,
-      },
+  async autocomplete(input) {
+    const cities: [string, number, number][] = [
+      ["Frankfurt am Main", 50.1109, 8.6821],
+      ["Berlin", 52.52, 13.405],
+      ["Hamburg", 53.5511, 9.9937],
+      ["München", 48.1351, 11.582],
+      ["Köln", 50.9375, 6.9603],
     ];
-  });
-}
+    const q = input.toLowerCase();
+    return cities
+      .filter(([name]) => name.toLowerCase().includes(q))
+      .map(([name, lat, lng]) => ({ placeId: `sample-city:${lat},${lng}`, main: name, secondary: "Deutschland" }));
+  },
+
+  async location(placeId) {
+    const [lat, lng] = placeId.replace("sample-city:", "").split(",").map(Number);
+    return { lat, lng };
+  },
+};

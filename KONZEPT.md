@@ -127,13 +127,14 @@ sessions/{sessionId}/votes/{uid}
 - **Löschen:** Eine tägliche Aufräumfunktion löscht abgelaufene Runden **samt** Teilnehmenden und Swipes (rekursiv). Die Firestore-TTL allein würde Unterdokumente liegen lassen.
 
 ### 5.3 Google Places API
-- **Speichern:** Dauerhaft speichern wir nur die **Place-ID**. Name, Fotos und Bewertungen kommen frisch von Google. Ob wir Details für die Dauer einer Runde zwischenspeichern dürfen, prüfen wir vor Woche 2 in den Google-Bedingungen für den EWR.
+- **Speichern:** Laut Google-Bedingungen darf nur die **Place-ID** gespeichert werden. Name, Bewertung, Fotos usw. werden bei jedem Öffnen frisch geladen: Der Server wiederholt dafür die ursprüngliche Suche (gespeichert ist nur, wie viele Ergebnisseiten pro Art abgefragt wurden) und lädt fehlende Orte einzeln nach.
+- **Fotos:** werden erst geladen, wenn eine Karte gleich sichtbar wird (die nächsten 3 Karten), weil jedes Foto ein eigener Google-Aufruf ist.
 - **Öffnungszeiten:** Für Termine in den nächsten 7 Tagen nutzen wir die tagesaktuellen Öffnungszeiten von Google, die Feiertage und Sonderzeiten enthalten. Bei fehlenden Angaben bekommt die Karte den Hinweis „Öffnungszeiten prüfen“.
 - **Typen:** Pro Kategorie fassen wir mehrere Google-Typen zusammen, etwa bar, pub und wine_bar. Wir justieren in der Testphase nach.
 - **Kosten:**
   - Wir fragen nur die nötigen Felder ab.
   - Pro Karte laden wir ein Foto in kleiner Auflösung.
-  - In der Google Cloud Console setzen wir **harte Tageslimits (Quotas)**. Die sind die eigentliche Kostenbremse, denn eine Budget-Warnung schickt nur eine E-Mail.
+  - **Harte Tageslimits im Server-Code** (max. 1.500 Google-Aufrufe/Tag, Grenzen pro Person). Eine Budget-Warnung schickt nur eine E-Mail; API-Kontingente folgen nach dem Testzeitraum.
   - In Woche 2 messen wir die echten Kosten mit einer Testrunde.
 
 ### 5.4 Datenschutz (Freundeskreis-Version)

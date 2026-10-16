@@ -1,6 +1,6 @@
 import { doc, setDoc, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { errorText, getRoundPlaces } from "../api";
+import { useEffect, useRef, useState } from "react";
+import { errorText, getPhotos, getRoundPlaces } from "../api";
 import { db } from "../firebase";
 import { useMembers, useOwnVotes, useSession } from "../hooks";
 import type { Place } from "../types";
@@ -26,6 +26,8 @@ export function Round({ sessionId, uid, onHome }: Props) {
   const [tab, setTab] = useState<"swipe" | "results">("swipe");
   const [detail, setDetail] = useState<Place | null>(null);
   const [toast, setToast] = useState("");
+  const [photos, setPhotos] = useState<Record<string, string>>({});
+  const requestedPhotos = useRef(new Set<string>());
 
   useEffect(() => {
     if (!isMember || places) return;
@@ -33,6 +35,22 @@ export function Round({ sessionId, uid, onHome }: Props) {
       .then((r) => setPlaces(r.places))
       .catch((err) => setPlacesError(errorText(err)));
   }, [isMember, places, sessionId]);
+
+  // Fotos erst laden, wenn eine Karte gleich sichtbar wird – jedes Foto kostet einen Google-Aufruf.
+  const upcoming = places?.filter((p) => votes && !(p.id in votes)).slice(0, 3) ?? [];
+  const photoNeeds = [...upcoming, ...(detail ? [detail] : [])]
+    .map((p) => p.photoName)
+    .filter((n): n is string => !!n && !requestedPhotos.current.has(n));
+  const photoKey = photoNeeds.join("|");
+  useEffect(() => {
+    if (!photoKey) return;
+    const names = photoKey.split("|");
+    names.forEach((n) => requestedPhotos.current.add(n));
+    getPhotos({ sessionId, photoNames: names })
+      .then((r) => setPhotos((prev) => ({ ...prev, ...r.photos })))
+      .catch(() => undefined);
+  }, [photoKey, sessionId]);
+  const photoUrl = (p: Place) => (p.photoName ? photos[p.photoName] : undefined);
 
   useEffect(() => {
     if (!toast) return;
@@ -158,7 +176,7 @@ export function Round({ sessionId, uid, onHome }: Props) {
             )}
           </section>
         ) : (
-          <SwipeDeck places={remaining} onVote={vote} onOpen={setDetail} onDone={() => setDone(true)} />
+          <SwipeDeck places={remaining} photoUrl={photoUrl} onVote={vote} onOpen={setDetail} onDone={() => setDone(true)} />
         ))}
 
       {tab === "results" && (
@@ -166,6 +184,7 @@ export function Round({ sessionId, uid, onHome }: Props) {
           sessionId={sessionId}
           session={s}
           places={places}
+          photoUrl={photoUrl}
           members={active}
           uid={uid}
           isCreator={isCreator}
@@ -174,7 +193,7 @@ export function Round({ sessionId, uid, onHome }: Props) {
         />
       )}
 
-      {detail && <PlaceSheet place={detail} onClose={() => setDetail(null)} />}
+      {detail && <PlaceSheet place={detail} photoUrl={photoUrl(detail)} onClose={() => setDetail(null)} />}
       {toast && (
         <div className="toast" role="status">
           {toast}

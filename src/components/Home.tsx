@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { createRound, errorText } from "../api";
 import { TYPE_LABEL } from "../format";
 import { loadName, saveName } from "../storage";
 import type { PlaceType } from "../types";
+import { AddressSearch } from "./AddressSearch";
 import { Chips } from "./Chips";
 
 const RADII = [1000, 2000, 5000, 10000];
-// Beispielort für den Testmodus, solange es noch keine Adresssuche gibt.
+// Beispielort nur für die lokale Entwicklung mit Emulatoren.
 const DEMO_CENTER = { lat: 50.1109, lng: 8.6821, label: "Beispielort (Frankfurt)" };
+const IS_EMULATOR = import.meta.env.MODE === "emulator";
 
 type Center = { lat: number; lng: number; label: string };
 
@@ -31,6 +33,7 @@ export function Home({ onCreated }: { onCreated: (sessionId: string) => void }) 
   const [openHours, setOpenHours] = useState(2);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const showError = useCallback((message: string) => setError(message), []);
 
   function locate() {
     if (!("geolocation" in navigator)) {
@@ -45,7 +48,7 @@ export function Home({ onCreated }: { onCreated: (sessionId: string) => void }) 
         setLocating(false);
       },
       () => {
-        setError("Standort nicht verfügbar. Bitte Freigabe prüfen oder den Beispielort nutzen.");
+        setError("Standort nicht verfügbar. Bitte Freigabe prüfen oder eine Adresse eingeben.");
         setLocating(false);
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
@@ -115,9 +118,18 @@ export function Home({ onCreated }: { onCreated: (sessionId: string) => void }) 
               <button type="button" className="btn secondary" onClick={locate} disabled={locating}>
                 {locating ? "Standort wird bestimmt …" : "📍 Meinen Standort verwenden"}
               </button>
-              <button type="button" className="link" onClick={() => setCenter(DEMO_CENTER)}>
-                Testmodus: Beispielort verwenden
-              </button>
+              <AddressSearch
+                onPick={(c) => {
+                  setError("");
+                  setCenter(c);
+                }}
+                onError={showError}
+              />
+              {IS_EMULATOR && (
+                <button type="button" className="link" onClick={() => setCenter(DEMO_CENTER)}>
+                  Testmodus: Beispielort verwenden
+                </button>
+              )}
             </div>
           )}
         </fieldset>
@@ -187,7 +199,7 @@ export function Home({ onCreated }: { onCreated: (sessionId: string) => void }) 
         </button>
       </form>
 
-      <p className="note">Testversion: Es werden noch ausgedachte Beispiel-Lokale angezeigt.</p>
+      <p className="note">Lokale, Bewertungen und Fotos: Google Maps</p>
     </main>
   );
 }

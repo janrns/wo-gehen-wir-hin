@@ -1,6 +1,6 @@
 import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase";
-import type { Place, Search } from "./types";
+import type { Place, Search, Suggestion } from "./types";
 
 function call<Req, Res>(name: string) {
   const fn = httpsCallable<Req, Res>(functions, name);
@@ -18,6 +18,17 @@ export const joinRound = call<
 >("joinRound");
 
 export const getRoundPlaces = call<{ sessionId: string }, { places: Place[] }>("getRoundPlaces");
+export const getPhotos = call<{ sessionId: string; photoNames: string[] }, { photos: Record<string, string> }>(
+  "getPhotos",
+);
+export const autocomplete = call<
+  { input: string; sessionToken: string; near: { lat: number; lng: number } | null },
+  { suggestions: Suggestion[] }
+>("autocomplete");
+export const resolveLocation = call<
+  { placeId: string; sessionToken: string },
+  { location: { lat: number; lng: number } }
+>("resolveLocation");
 export const closeRound = call<{ sessionId: string }, unknown>("closeRound");
 export const removeMember = call<{ sessionId: string; memberId: string }, unknown>("removeMember");
 

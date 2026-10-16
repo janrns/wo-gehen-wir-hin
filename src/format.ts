@@ -7,3 +7,9 @@ export function formatDistance(m: number): string {
 }
 
 export const TYPE_LABEL = { restaurant: "Restaurant", bar: "Bar", cafe: "Café" } as const;
+
+/** „Bar · Cocktailbar“ – doppelte Angaben wie „Restaurant · Italienisches Restaurant“ werden gekürzt. */
+export function kicker(place: { type: keyof typeof TYPE_LABEL; cuisine: string }): string {
+  const label = TYPE_LABEL[place.type];
+  return place.cuisine.toLowerCase().includes(label.toLowerCase()) ? place.cuisine : `${label} · ${place.cuisine}`;
+}

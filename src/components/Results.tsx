@@ -7,6 +7,7 @@ interface Props {
   sessionId: string;
   session: Session;
   places: Place[] | null;
+  photoUrl: (place: Place) => string | undefined;
   members: Member[];
   uid: string;
   isCreator: boolean;
@@ -14,7 +15,7 @@ interface Props {
   onError: (message: string) => void;
 }
 
-export function Results({ sessionId, session, places, members, uid, isCreator, onOpen, onError }: Props) {
+export function Results({ sessionId, session, places, photoUrl, members, uid, isCreator, onOpen, onError }: Props) {
   const [busy, setBusy] = useState(false);
   const byId = new Map(places?.map((p) => [p.id, p]));
   const allDone = members.every((m) => m.done);
@@ -65,7 +66,7 @@ export function Results({ sessionId, session, places, members, uid, isCreator, o
               <li key={e.placeId}>
                 <button className="rank-row" onClick={() => onOpen(p)}>
                   <span className="rank">{i + 1}</span>
-                  <PlacePhoto place={p} className="thumb" />
+                  <PlacePhoto place={p} url={photoUrl(p)} className="thumb" />
                   <span className="rank-main">
                     <strong>{p.name}</strong>
                     <span className="bar" aria-hidden>
@@ -81,6 +82,8 @@ export function Results({ sessionId, session, places, members, uid, isCreator, o
           })}
         </ol>
       )}
+
+      {places?.[0]?.source === "google" && <p className="attribution">Daten: Google Maps</p>}
 
       <h3>Dabei</h3>
       <ul className="members">
