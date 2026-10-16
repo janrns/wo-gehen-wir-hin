@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Grundsatz: Runden, Ranglisten und Teilnahmen schreibt nur der Server (Cloud Functions).
+// Clients dürfen nur ihren Fertig-Status und ihre eigenen Swipes schreiben.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function sessionData(sid) {
+      return get(/databases/$(database)/documents/sessions/$(sid)).data;
+    }
+
+    function isActiveMember(sid) {
+      let member = /databases/$(database)/documents/sessions/$(sid)/members/$(request.auth.uid);
+      return signedIn() && exists(member) && get(member).data.removed == false;
+    }
+
+    match /sessions/{sid} {
+      // Wer den (zufälligen, langen) Link kennt, darf die Runde sehen. Auflisten ist gesperrt.
+      allow get: if signedIn();
+      allow list, write: if false;
+
+      match /members/{uid} {
+        allow read: if isActiveMember(sid);
+        allow update: if request.auth.uid == uid
+          && isActiveMember(sid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done'])
+          && request.resource.data.done is bool;
+        allow create, delete: if false;
+      }
+
+      // Swipes sind privat: Jede Person sieht nur die eigenen, die Rangliste berechnet der Server.
+      match /votes/{uid} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow create, update: if request.auth.uid == uid
+          && isActiveMember(sid)
+          && sessionData(sid).status == 'open'
+          && request.resource.data.keys().hasOnly(['votes'])
+          && request.resource.data.votes is map
+          && request.resource.data.votes.keys().hasOnly(sessionData(sid).placeIds);
+        allow delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

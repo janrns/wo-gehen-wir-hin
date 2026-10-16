@@ -77,7 +77,7 @@ Die bisherigen Swipes sind dann „weg“, und die Person taucht doppelt auf.
 
 ### C2 🟠 Automatisches Löschen löscht nur die Hälfte ✅
 Die Firestore-Löschfrist (TTL) löscht ein Dokument, **aber nicht dessen Unterdokumente**. Teilnehmende und Swipes einer Runde blieben liegen.
-**Gegenmaßnahme:** Jedes Dokument bekommt ein eigenes Ablaufdatum. Zusätzlich räumt eine geplante Funktion täglich auf.
+**Gegenmaßnahme:** Eine geplante Funktion löscht abgelaufene Runden täglich rekursiv, also inklusive aller Unterdokumente.
 
 ### C3 🟠 Server-Standort lässt sich später nicht ändern ✅
 Den Firestore-Standort wählt man einmalig beim Anlegen, danach ist er fest.

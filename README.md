@@ -4,10 +4,48 @@ Eine App, mit der Freunde nach dem Swipe-and-Match-Prinzip Restaurants und Bars 
 
 ## Idee
 
-1. Eine Person startet eine Runde und lädt Freunde ein.
+1. Eine Person startet eine Runde und lädt Freunde per Link ein.
 2. Alle swipen unabhängig voneinander durch Vorschläge für Restaurants und Bars (rechts = gefällt mir, links = eher nicht).
-3. Sobald alle Teilnehmenden denselben Ort mögen, gibt es ein **Match** – und das nächste Treffen steht.
+3. Eine Live-Rangliste zeigt, was der Gruppe am besten gefällt. Mögen alle denselben Ort, gibt es ein **Perfect Match**.
 
-## Status
+Details: [KONZEPT.md](KONZEPT.md) · Risikoanalyse: [REDTEAMING.md](REDTEAMING.md)
 
-Projekt im Aufbau. Das Grobkonzept steht in [KONZEPT.md](KONZEPT.md), die Risikoanalyse in [REDTEAMING.md](REDTEAMING.md).
+## Stand
+
+Woche 1: Grundgerüst mit **ausgedachten Beispiel-Lokalen**. Die Anbindung an Google Places folgt in Woche 2.
+
+## Aufbau
+
+| Ordner/Datei | Inhalt |
+|---|---|
+| `src/` | Web-App (React + TypeScript + Vite, PWA) |
+| `functions/` | Cloud Functions: Runde erstellen/beitreten/beenden, Rangliste berechnen, Aufräumen |
+| `firestore.rules` | Zugriffsregeln der Datenbank |
+| `tests/` | Tests der Zugriffsregeln |
+
+## Lokal entwickeln
+
+Voraussetzungen: Node.js 22 und Java 21 (für die Firebase-Emulatoren).
+
+```bash
+npm install
+npm --prefix functions install
+npm --prefix functions run build
+
+# Terminal 1: Firebase-Emulatoren (Auth, Firestore, Functions)
+npm run emulators
+
+# Terminal 2: App gegen die Emulatoren starten → http://localhost:5173
+npm run dev:emu
+```
+
+Tests: `npm test` (Rangliste + Zugriffsregeln).
+
+## Veröffentlichen
+
+```bash
+npx firebase login
+npm run deploy
+```
+
+Danach ist die App unter <https://wo-gehen-wir-hin.web.app> erreichbar.

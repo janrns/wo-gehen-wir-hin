@@ -113,19 +113,18 @@ sessions/{sessionId}
   perfectMatchIds: [placeId, …]             // nur Server schreibt
 
 sessions/{sessionId}/members/{uid}
-  name, joinedAt, expiresAt
+  name, joinedAt
   done:     true | false
   removed:  true | false                    // nur Ersteller/Server
 
 sessions/{sessionId}/votes/{uid}
-  expiresAt
   votes:    { placeId: true | false, … }    // nur eigene Person liest/schreibt
 ```
 
 - Die **Session-ID** ist lang und zufällig. Nur wer den Link hat, kommt in die Runde. Ein Auflisten aller Runden ist gesperrt.
 - **Swipes bleiben privat:** Jede Person sieht nur ihre eigenen. Der Server berechnet daraus die Rangliste.
 - **Sicherheitsregeln:** Clients schreiben nur den eigenen Namen, den Fertig-Status und Swipes auf Orte dieser Runde. Rangliste, Match, Status und Ersteller setzt nur der Server. Die Regeln werden mit automatischen Tests abgesichert.
-- **Löschen:** Jedes Dokument hat ein eigenes `expiresAt` (Firestore-TTL), dazu kommt eine tägliche Aufräumfunktion. Die TTL löscht keine Unterdokumente mit.
+- **Löschen:** Eine tägliche Aufräumfunktion löscht abgelaufene Runden **samt** Teilnehmenden und Swipes (rekursiv). Die Firestore-TTL allein würde Unterdokumente liegen lassen.
 
 ### 5.3 Google Places API
 - **Speichern:** Dauerhaft speichern wir nur die **Place-ID**. Name, Fotos und Bewertungen kommen frisch von Google. Ob wir Details für die Dauer einer Runde zwischenspeichern dürfen, prüfen wir vor Woche 2 in den Google-Bedingungen für den EWR.
