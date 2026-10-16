@@ -8,11 +8,12 @@ Eine App, mit der Freunde nach dem Swipe-and-Match-Prinzip Restaurants und Bars 
 2. Alle swipen unabhängig voneinander durch Vorschläge für Restaurants und Bars (rechts = gefällt mir, links = eher nicht).
 3. Eine Live-Rangliste zeigt, was der Gruppe am besten gefällt. Mögen alle denselben Ort, gibt es ein **Perfect Match**.
 
-Details: [KONZEPT.md](KONZEPT.md) · Risikoanalyse: [REDTEAMING.md](REDTEAMING.md)
+Details: [KONZEPT.md](KONZEPT.md) · Risikoanalyse: [REDTEAMING.md](REDTEAMING.md) · Einrichtung: [DEPLOY.md](DEPLOY.md), [PLACES-SETUP.md](PLACES-SETUP.md)
 
 ## Stand
 
-Woche 1: Grundgerüst mit **ausgedachten Beispiel-Lokalen**. Die Anbindung an Google Places folgt in Woche 2.
+Woche 1 ✅: Grundgerüst mit **ausgedachten Beispiel-Lokalen**, live unter <https://wo-gehen-wir-hin.web.app>.
+Woche 2: Anbindung an Google Places.
 
 ## Aufbau
 
